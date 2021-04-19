@@ -153,7 +153,7 @@ void *eps_test(void *tid)
 #endif
     while (!done)
     {
-        printf("[p]ing, [k]ill eps, get [h]ousekeeping, [c]onfig, [r]eboot, toggle [l]atchup, [q]uit: ");
+        printf("[p]ing, [k]ill eps, get [h]ousekeeping, [c]onfig, [r]eboot, toggle [l]atchup, [q]uit, get [d]ata log: ");
         c = getchar();
         fflush(stdin);
         printf("\n");
@@ -171,6 +171,7 @@ void *eps_test(void *tid)
             eps_get_hk_out(&hk_out);
             print_hk(hk);
             print_hk_out(hk_out);
+
             break;
         case 'c':
         case 'C':
@@ -237,6 +238,19 @@ void *eps_test(void *tid)
             done = 1;
             printf("\tdone = %d\n", done);
             break;
+        case 'd':
+        case 'D':
+            printf("Getting latest data log ... \n");
+            // Get a log from the log file.
+            char* logOut;
+
+            logOut = malloc(dlgr_queryMemorySize(sizeof(eps_hk_t), 1));
+            dlgr_retrieveData(logOut, 1, "eps");
+
+            print_hk(*(hkparam_t*)logOut);
+
+            free(logOut);
+            done = 1;
         default:
             break;
         }

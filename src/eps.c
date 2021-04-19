@@ -138,6 +138,17 @@ void *eps_thread(void *tid)
         eps_reset_wdt(eps);
         // add other things here
 
+        hkparam_t hk;
+        eps_hk_out_t hk_out;
+        //eps_config_t conf[1]; <-- NOTE: Unused variable warning.
+
+        memset(&hk, 0x0, sizeof(hkparam_t));
+        eps_get_hk(&hk);
+        memset(&hk_out, 0x0, sizeof(eps_hk_out_t));
+        eps_get_hk_out(&hk_out);
+
+        // Log housekeeping data.
+        dlgr_logData(sizeof(eps_hk_t), &hk_out, "eps");
 
         sleep(EPS_LOOP_TIMER);
     }
