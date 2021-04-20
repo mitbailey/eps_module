@@ -181,6 +181,8 @@ int bootCount()
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define FBEGIN_SIZE 6
 #define FEND_SIZE 4
@@ -223,8 +225,23 @@ ssize_t moduleLogSize;
 int dlgr_init()
 {
     char *moduleName = NULL;
+
+    // Check if log directory exists. If not, create it.
+    const char* directory;
+    directory = "log";
+    struct stat sb;
+
+    if (!(stat(directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
+        mkdir("log", S_IRWXU);
+    }
+
     for (int i = 0; i < num_modname; i++)
     {
+        // Check if log/%s, moduleName directory exists. If not, create it.
+        if (!(stat(moduleName, &sb) == 0 && S_ISDIR(sb.st_mode))){
+            mkdir(moduleName, S_IRWXU);
+        }
+
         moduleName = module_name[i];
         // Set the module log size to -1 until we know how large one is.
         moduleLogSize = -1;
