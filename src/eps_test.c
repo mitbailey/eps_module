@@ -242,12 +242,13 @@ void *eps_test(void *tid)
         case 'D':
             printf("Getting latest data log ... \n");
             // Get a log from the log file.
-            char* logOut;
+            char *logOut;
 
-            logOut = malloc(dlgr_queryMemorySize(sizeof(eps_hk_t), 1));
-            dlgr_retrieveData(logOut, 1, "eps");
+            dlgr_RegisterMaxLogSize("eps", sizeof(eps_hk_t));
+            logOut = malloc(dlgr_QueryMemorySize("eps", 1));
+            dlgr_RetrieveData("eps", logOut, 1);
 
-            print_hk(*(hkparam_t*)logOut);
+            print_hk(*(hkparam_t *)logOut);
 
             free(logOut);
             done = 1;

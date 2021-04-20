@@ -148,7 +148,7 @@ void *eps_thread(void *tid)
         eps_get_hk_out(&hk_out);
 
         // Log housekeeping data.
-        dlgr_logData(sizeof(eps_hk_t), &hk_out, "eps");
+        dlgr_LogData("eps", sizeof(eps_hk_t), &hk_out);
 
         sleep(EPS_LOOP_TIMER);
     }
