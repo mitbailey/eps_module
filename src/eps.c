@@ -19,6 +19,8 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#define MODULE_NAME "eps"
+
 /* Variable allocation for EPS */
 
 /**
@@ -117,6 +119,9 @@ int eps_init()
     {
         return -2;
     }
+
+    dlgr_RegisterMaxLogSize(MODULE_NAME, sizeof(eps_hk_t));
+
     return 1;
 }
 
@@ -148,7 +153,7 @@ void *eps_thread(void *tid)
         eps_get_hk_out(&hk_out);
 
         // Log housekeeping data.
-        dlgr_LogData("eps", sizeof(eps_hk_t), &hk_out);
+        dlgr_LogData(MODULE_NAME, sizeof(eps_hk_t), &hk_out);
 
         sleep(EPS_LOOP_TIMER);
     }

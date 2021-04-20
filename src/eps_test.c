@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#define MODULE_NAME "eps_test"
+
 /*
 Commands available externally:
 Ping
@@ -241,10 +243,9 @@ void *eps_test(void *tid)
         case 'd':
         case 'D':
             printf("Getting latest data log ... \n");
-            // Get a log from the log file.
+            // Logs, retrieves, and prints sample HKing data.
             char *logOut;
 
-            dlgr_RegisterMaxLogSize("eps", sizeof(eps_hk_t));
             logOut = malloc(dlgr_QueryMemorySize("eps", 1));
             dlgr_RetrieveData("eps", logOut, 1);
 

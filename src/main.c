@@ -53,6 +53,10 @@ int main(void)
         }
     }
     printf("Done init modules\n");
+
+    // Initialize datalogger.
+    printf("Initializing datalogger: %d\n", dlgr_init());
+
     // set up threads
     int rc[num_systems];                                         // fork-join return codes
     pthread_t thread[num_systems];                               // thread containers
@@ -216,132 +220,136 @@ ssize_t moduleLogSize;
 // char* moduleName is just a placeholder. Later, we will get the
 // module names from somewhere else.
 
-int dlgr_init(char *moduleName)
+int dlgr_init()
 {
-    // Set the module log size to -1 until we know how large one is.
-    moduleLogSize = -1;
+    char *moduleName = NULL;
+    for (int i = 0; i < num_modname; i++)
+    {
+        moduleName = module_name[i];
+        // Set the module log size to -1 until we know how large one is.
+        moduleLogSize = -1;
 #define MODULE_FNAME_SZ 128
-    // Get the size of this module's log if one was already written.
-    char moduleFile[MODULE_FNAME_SZ] = {
-        0x0,
-    };
-    snprintf(moduleFile, sizeof(moduleFile), "log/%s/module.inf", moduleName);
+        // Get the size of this module's log if one was already written.
+        char moduleFile[MODULE_FNAME_SZ] = {
+            0x0,
+        };
+        snprintf(moduleFile, sizeof(moduleFile), "log/%s/module.inf", moduleName);
 
-    FILE *modu = NULL;
+        FILE *modu = NULL;
 
-    char *sLogSize;
-    // If a module.inf file does not exist, create one and put in this module's log's size.
-    if (access(moduleFile, F_OK | R_OK) == 0)
-    {
-        modu = fopen(moduleFile, "r");
-        fgets(sLogSize, 20, (FILE *)index);
-        moduleLogSize = atoi(sLogSize);
-        fclose(modu);
-    }
-    else
-    {
-        modu = fopen(moduleFile, "w");
-        fprintf(modu, "%d", moduleLogSize);
-        fclose(modu);
-    }
-
-    if (localSettings == NULL)
-    {
-        return ERR_INIT;
-    }
-
-    // Create index.inf, with a single 0, for each module.
-    // Create an initial log file, 0.dat, for each module.
-    // TODO: No list of module names yet.
-
-    // Creates index.inf
-    char indexFile[MODULE_FNAME_SZ] = {
-        0x0,
-    };
-    snprintf(indexFile, sizeof(indexFile), "log/%s/index.inf", moduleName);
-
-    FILE *index = NULL;
-
-    // Note: access() returns 0 on success.
-    // If an index file exists, update our index to match.
-    // Otherwise, make an index file with index = 0.
-    if (access(indexFile, F_OK | R_OK) == 0)
-    {
-        // An index file already exists.
-        // Set our logIndex to the value in index.inf
-        index = fopen(indexFile, "r");
-        char sIndex[20];
-        fgets(sIndex, 20, (FILE *)index);
-        logIndex = atoi(sIndex);
-        fclose(index);
-    }
-    else
-    {
-        index = fopen(indexFile, "w");
-        fprintf(index, "0\n");
-        fclose(index);
-        sync();
-    }
-
-    // Creates an initial log file, 0.dat
-    char dataFile[MODULE_FNAME_SZ] = {
-        0x0,
-    };
-    snprintf(dataFile, sizeof(dataFile), "log/%s/0.log", moduleName);
-
-    FILE *data = NULL;
-
-    if (access(dataFile, F_OK | R_OK) != 0)
-    {
-        // An initial data file does not already exist.
-        data = fopen(dataFile, "wb");
-        fclose(data);
-    }
-
-    // Creates an initial settings file, or syncs localSettings if one already exists.
-    char settingsFile[MODULE_FNAME_SZ] = {
-        0x0,
-    };
-    snprintf(settingsFile, sizeof(settingsFile), "log/%s/0.log", moduleName);
-
-    FILE *settings = NULL;
-
-    // If exists, sync settings, else create a new one.
-    if (access(settingsFile, F_OK | R_OK) == 0)
-    {
-        settings = fopen(settingsFile, "r");
-
-        if (settings == NULL)
+        char *sLogSize;
+        // If a module.inf file does not exist, create one and put in this module's log's size.
+        if (access(moduleFile, F_OK | R_OK) == 0)
         {
-            return ERR_SETTINGS_OPEN;
+            modu = fopen(moduleFile, "r");
+            fgets(sLogSize, 20, (FILE *)index);
+            moduleLogSize = atoi(sLogSize);
+            fclose(modu);
+        }
+        else
+        {
+            modu = fopen(moduleFile, "w");
+            fprintf(modu, "%d", moduleLogSize);
+            fclose(modu);
         }
 
-        char sMaxFileSize[10];
-        char sMaxDirSize[10];
-
-        // Gets the index, maxSizes
-        if (fgets(sMaxFileSize, 10, (FILE *)settings) == NULL || fgets(sMaxDirSize, 10, (FILE *)settings) == NULL)
+        if (localSettings == NULL)
         {
-            return ERR_SETTINGS_ACCESS;
+            return ERR_INIT;
         }
 
-        // Converts the retrieved string to an int.
-        localSettings->maxFileSize = atoi(sMaxFileSize);
-        localSettings->maxDirSize = atoi(sMaxDirSize);
+        // Create index.inf, with a single 0, for each module.
+        // Create an initial log file, 0.dat, for each module.
+        // TODO: No list of module names yet.
 
-        fclose(settings);
-    }
-    else
-    {
-        // No settings exists, create one and fill it with defaults.
-        settings = fopen(settingsFile, "w");
-        fprintf(settings, "8192");    // 8KB
-        fprintf(settings, "4194304"); // 4 MB
-        fprintf(settings, "1");
-        fclose(settings);
-        sync();
-    }
+        // Creates index.inf
+        char indexFile[MODULE_FNAME_SZ] = {
+            0x0,
+        };
+        snprintf(indexFile, sizeof(indexFile), "log/%s/index.inf", moduleName);
 
+        FILE *index = NULL;
+
+        // Note: access() returns 0 on success.
+        // If an index file exists, update our index to match.
+        // Otherwise, make an index file with index = 0.
+        if (access(indexFile, F_OK | R_OK) == 0)
+        {
+            // An index file already exists.
+            // Set our logIndex to the value in index.inf
+            index = fopen(indexFile, "r");
+            char sIndex[20];
+            fgets(sIndex, 20, (FILE *)index);
+            logIndex = atoi(sIndex);
+            fclose(index);
+        }
+        else
+        {
+            index = fopen(indexFile, "w");
+            fprintf(index, "0\n");
+            fclose(index);
+            sync();
+        }
+
+        // Creates an initial log file, 0.dat
+        char dataFile[MODULE_FNAME_SZ] = {
+            0x0,
+        };
+        snprintf(dataFile, sizeof(dataFile), "log/%s/0.log", moduleName);
+
+        FILE *data = NULL;
+
+        if (access(dataFile, F_OK | R_OK) != 0)
+        {
+            // An initial data file does not already exist.
+            data = fopen(dataFile, "wb");
+            fclose(data);
+        }
+
+        // Creates an initial settings file, or syncs localSettings if one already exists.
+        char settingsFile[MODULE_FNAME_SZ] = {
+            0x0,
+        };
+        snprintf(settingsFile, sizeof(settingsFile), "log/%s/0.log", moduleName);
+
+        FILE *settings = NULL;
+
+        // If exists, sync settings, else create a new one.
+        if (access(settingsFile, F_OK | R_OK) == 0)
+        {
+            settings = fopen(settingsFile, "r");
+
+            if (settings == NULL)
+            {
+                return ERR_SETTINGS_OPEN;
+            }
+
+            char sMaxFileSize[10];
+            char sMaxDirSize[10];
+
+            // Gets the index, maxSizes
+            if (fgets(sMaxFileSize, 10, (FILE *)settings) == NULL || fgets(sMaxDirSize, 10, (FILE *)settings) == NULL)
+            {
+                return ERR_SETTINGS_ACCESS;
+            }
+
+            // Converts the retrieved string to an int.
+            localSettings->maxFileSize = atoi(sMaxFileSize);
+            localSettings->maxDirSize = atoi(sMaxDirSize);
+
+            fclose(settings);
+        }
+        else
+        {
+            // No settings exists, create one and fill it with defaults.
+            settings = fopen(settingsFile, "w");
+            fprintf(settings, "8192");    // 8KB
+            fprintf(settings, "4194304"); // 4 MB
+            fprintf(settings, "1");
+            fclose(settings);
+            sync();
+        }
+    }
     return 1;
 }
 
