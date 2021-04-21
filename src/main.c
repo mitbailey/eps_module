@@ -227,22 +227,24 @@ int dlgr_init()
     char *moduleName = NULL;
 
     // Check if log directory exists. If not, create it.
-    const char* directory;
-    directory = "log";
+    const char directory[] = "log";
     struct stat sb;
 
     if (!(stat(directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
-        mkdir("log", S_IRWXU);
+        mkdir(directory, S_IRUSR | S_IWUSR);
     }
 
     for (int i = 0; i < num_modname; i++)
     {
+        char dirname[128] = {0x0, };
+        moduleName = module_name[i];
+
+        snprintf(dirname, sizeof(dirname), "%s/%s", directory, moduleName);
         // Check if log/%s, moduleName directory exists. If not, create it.
         if (!(stat(moduleName, &sb) == 0 && S_ISDIR(sb.st_mode))){
-            mkdir(moduleName, S_IRWXU);
+            mkdir(moduleName, S_IRUSR | S_IWUSR);
         }
 
-        moduleName = module_name[i];
         // Set the module log size to -1 until we know how large one is.
         moduleLogSize = -1;
 #define MODULE_FNAME_SZ 128
@@ -250,7 +252,7 @@ int dlgr_init()
         char moduleFile[MODULE_FNAME_SZ] = {
             0x0,
         };
-        snprintf(moduleFile, sizeof(moduleFile), "log/%s/module.inf", moduleName);
+        snprintf(moduleFile, sizeof(moduleFile), "%s/%s/module.inf", directory, moduleName);
 
         FILE *modu = NULL;
 
