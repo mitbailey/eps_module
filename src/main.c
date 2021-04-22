@@ -225,6 +225,7 @@ ssize_t moduleLogSize;
 int dlgr_init()
 {
     printf("(eps_module datalogger) DEBUG: dlgr_init called...\n");
+    fflush(stdout);
 
     char *moduleName = NULL;
 
