@@ -246,12 +246,12 @@ void *eps_test(void *tid)
             // Logs, retrieves, and prints sample HKing data.
             char *logOut;
 
-            logOut = malloc(dlgr_QueryMemorySize("eps", 1));
-            dlgr_RetrieveData("eps", logOut, 1);
+            // logOut = malloc(dlgr_QueryMemorySize("eps", 1));
+            // dlgr_RetrieveData("eps", logOut, 1);
 
-            print_hk(*(hkparam_t *)logOut);
+            // print_hk(*(hkparam_t *)logOut);
 
-            free(logOut);
+            // free(logOut);
             done = 1;
         default:
             break;

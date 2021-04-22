@@ -120,7 +120,7 @@ int eps_init()
         return -2;
     }
 
-    dlgr_RegisterMaxLogSize(MODULE_NAME, sizeof(eps_hk_t));
+    // dlgr_RegisterMaxLogSize(MODULE_NAME, sizeof(eps_hk_t));
 
     return 1;
 }
@@ -153,7 +153,7 @@ void *eps_thread(void *tid)
         eps_get_hk_out(&hk_out);
 
         // Log housekeeping data.
-        dlgr_LogData(MODULE_NAME, sizeof(eps_hk_t), &hk_out);
+        // dlgr_LogData(MODULE_NAME, sizeof(eps_hk_t), &hk_out);
 
         sleep(EPS_LOOP_TIMER);
     }

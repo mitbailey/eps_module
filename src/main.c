@@ -55,7 +55,7 @@ int main(void)
     printf("Done init modules\n");
 
     // Initialize datalogger.
-    printf("Initializing datalogger: %d\n", dlgr_init());
+    // printf("Initializing datalogger: %d\n", dlgr_init());
 
     // set up threads
     int rc[num_systems];                                         // fork-join return codes
