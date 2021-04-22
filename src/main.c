@@ -55,7 +55,7 @@ int main(void)
     printf("Done init modules\n");
 
     // Initialize datalogger.
-    // printf("Initializing datalogger: %d\n", dlgr_init());
+    printf("Initializing datalogger: %d\n", dlgr_init());
 
     // set up threads
     int rc[num_systems];                                         // fork-join return codes
@@ -224,6 +224,8 @@ ssize_t moduleLogSize;
 
 int dlgr_init()
 {
+    printf("(eps_module datalogger) DEBUG: dlgr_init called...\n");
+
     char *moduleName = NULL;
 
     // Check if log directory exists. If not, create it.
@@ -235,7 +237,7 @@ int dlgr_init()
         mkdir(directory, S_IRUSR | S_IWUSR);
     }
 
-    printf("(eps_module datalogger) DEBUG: Successful mkdir.");
+    printf("(eps_module datalogger) DEBUG: Successful mkdir.\n");
     fflush(stdout);
 
     for (int i = 0; i < num_modname; i++)
@@ -252,7 +254,7 @@ int dlgr_init()
             mkdir(moduleName, S_IRUSR | S_IWUSR);
         }
 
-        printf("(eps_module datalogger) DEBUG: Successful %s mkdir.", dirname);
+        printf("(eps_module datalogger) DEBUG: Successful %s mkdir.\n", dirname);
         fflush(stdout);
 
         // Set the module log size to -1 until we know how large one is.
@@ -282,7 +284,7 @@ int dlgr_init()
             fclose(modu);
         }
 
-        printf("(eps_module datalogger) DEBUG: %s: Checkpoint 1.", dirname);
+        printf("(eps_module datalogger) DEBUG: %s: Checkpoint 1.\n", dirname);
         fflush(stdout);
 
         if (localSettings == NULL)
@@ -323,7 +325,7 @@ int dlgr_init()
             sync();
         }
 
-        printf("(eps_module datalogger) DEBUG: %s: Checkpoint 2.", dirname);
+        printf("(eps_module datalogger) DEBUG: %s: Checkpoint 2.\n", dirname);
         fflush(stdout);
 
         // Creates an initial log file, 0.dat
@@ -385,7 +387,7 @@ int dlgr_init()
             sync();
         }
     }
-    printf("(eps_module datalogger) DEBUG: Successful initialization.");
+    printf("(eps_module datalogger) DEBUG: Successful initialization.\n");
     fflush(stdout);
     return 1;
 }
@@ -393,7 +395,7 @@ int dlgr_init()
 int dlgr_LogData(char *moduleName, ssize_t size, void *dataIn)
 {
     // Note: Directory will probably be accessed some other way eventually.
-    printf("(eps_module datalogger) DEBUG: dlgr_LogData called...");
+    printf("(eps_module datalogger) DEBUG: dlgr_LogData called...\n");
     fflush(stdout);
 
     if (moduleLogSize < 1)
@@ -489,7 +491,7 @@ int dlgr_LogData(char *moduleName, ssize_t size, void *dataIn)
     fclose(data);
     sync();
 
-    printf("(eps_module datalogger) DEBUG: Successful data log.");
+    printf("(eps_module datalogger) DEBUG: Successful data log.\n");
     fflush(stdout);
     return 1;
 }
@@ -512,7 +514,7 @@ int dlgr_RetrieveData(char *moduleName, char *output, int numRequestedLogs)
      * FEND
      */
 
-    printf("(eps_module datalogger) DEBUG: dlgr_RetrieveData called...");
+    printf("(eps_module datalogger) DEBUG: dlgr_LogData called...\n");
     fflush(stdout);
 
     // Check if the module log size is already defined.
@@ -548,7 +550,7 @@ int dlgr_RetrieveData(char *moduleName, char *output, int numRequestedLogs)
         return ERR_READ_NUM;
     }
 
-    printf("(eps_module datalogger) DEBUG: Successful data retrieval.");
+    printf("(eps_module datalogger) DEBUG: Successful data retrieval.\n");
     fflush(stdout);
     return 1;
 }
