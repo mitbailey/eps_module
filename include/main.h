@@ -11,7 +11,19 @@
  */
 #ifndef MAIN_H
 #define MAIN_H
+
+#ifndef MAIN_PRIVATE
+#ifndef MODULE_NAME
+#error "Define MODULE_NAME before including main.h"
+#endif
+#endif
+
+#define eprintf(str, ...) \
+    fprintf(stderr, "%s, %d: " str "\n", __func__, __LINE__, ##__VA_ARGS__); \
+    fflush(stderr)
+
 #include <signal.h>
+
 /**
  * @brief Describes ACS (system) states.
  * 
@@ -107,6 +119,8 @@ enum ERROR
     ERR_REREGISTER,
     ERR_MAXLOGSIZE_NOT_SET, // <- If you see this you need to call dlgr_RegisterMaxLogSize(...)!
     ERR_MAXLOGSIZE_EXCEEDED,
+    ERR_CHDIR_FAIL,
+    ERR_INDEX_OPEN,
 
     ERR_MISC
 };
@@ -177,41 +191,34 @@ ssize_t dlgr_QueryMemorySize(char *moduleName, int numRequestedLogs);
  */
 int dlgr_EditSettings(char *moduleName, int value, int setting);
 
-/**
- * @brief Defines the maximum log size able to be logged by this module.
- * 
- * Requests to log data must be composed of a data structure of this size. Sizes
- * smaller than max_size are allowable (datalogger provides padding). This
- * value, once set, can not be changed.
- * 
- * @param moduleName The name of the calling module.
- * @param max_size The maximum desired size for a log of data.
- * @return int Negative on failure (see: datalogger_extern.h's ERROR enum), 1 on success.
- */
-int dlgr_RegisterMaxLogSize(char *moduleName, ssize_t max_size);
-
 #ifdef DATALOGGER_PRIVATE // aka datalogger.h
 
 // File and directories cannot exceed these limits.
 #define SIZE_FILE_HARDLIMIT 1048576 // 1MB
 #define SIZE_DIR_HARDLIMIT 16777216 // 16MB
 
-typedef struct SETTINGS
+typedef struct DATALOGGER
 {
+    uint64_t logIndex;
+    ssize_t moduleLogSize;
     int maxFileSize;
     int maxDirSize;
-} settings_t;
+} datalogger_t;
 
 /**
  * @brief Initializes the datalogger and its files.
  * 
  * If files such as index.inf exist, init will set dlgr's variables
  * to match. If they do not exist, init will create them.
+ * Requests to log data must be composed of a data structure of the size 
+ * passed here. Sizes smaller than max_size are allowable (datalogger
+ * provides padding). This value, once set, can not be changed.
  * 
- * @param moduleName Temp. variable, assumption is this is a module name such as "eps".
+ * @param moduleName The calling module's name for which this datalogger is being initialized.
+ * @param maxLogSize The maximum desired log size for this module's logs.
  * @return int Negative on failure (see: datalogger_extern.h's ERROR enum), 1 on success.
  */
-int dlgr_init();
+int dlgr_init(char* moduleName, ssize_t maxLogSize);
 
 /**
  * @brief A helper function for dlgr_retrieveData

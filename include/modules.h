@@ -18,13 +18,6 @@
 typedef int (*init_func)(void);     // typedef to create array of init functions
 typedef void (*destroy_func)(void); // typedef to create array of destroy functions
 
-char module_name[][20] = {
-    "justfuckingwithya",
-    "eps",
-    "anyothername",
-    "tryingmorenames"
-};
-const int num_modname = sizeof(module_name);
 /**
  * @brief Registers init functions of a given module
  */
