@@ -120,8 +120,6 @@ int eps_init()
         return -2;
     }
 
-    dlgr_RegisterMaxLogSize(MODULE_NAME, sizeof(eps_hk_t));
-
     return 1;
 }
 

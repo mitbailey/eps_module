@@ -14,7 +14,7 @@
 
 #ifndef MAIN_PRIVATE
 #ifndef MODULE_NAME
-#error "Define MODULE_NAME before including main.h"
+//#error "Define MODULE_NAME before including main.h"
 #endif
 #endif
 
@@ -117,7 +117,7 @@ enum ERROR
     ERR_READ_NUM,
     ERR_INVALID_INPUT,
     ERR_REREGISTER,
-    ERR_MAXLOGSIZE_NOT_SET, // <- If you see this you need to call dlgr_RegisterMaxLogSize(...)!
+    ERR_MAXLOGSIZE_NOT_SET,
     ERR_MAXLOGSIZE_EXCEEDED,
     ERR_CHDIR_FAIL,
     ERR_INDEX_OPEN,
@@ -230,20 +230,6 @@ int dlgr_init(char* moduleName, ssize_t maxLogSize);
  * @return int The number of logs added to output.
  */
 int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int indexOffset);
-
-/**
- * @brief Returns the index of the token within buffer.
- * 
- * Searches for the first instance of token within buffer and returns the index of
- * the first character.
- * 
- * @param buffer The character array to be searched.
- * @param bufferSize The size of the buffer.
- * @param token The token to search for within buffer.
- * @param tokenSize The size of the token.
- * @return int Index of the token within buffer on success, ERR_MISC on failure.
- */
-int dlgr_indexOf(char *buffer, ssize_t bufferSize, char *token, ssize_t tokenSize);
 
 /**
  * @brief WIP

@@ -417,11 +417,11 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
 
     // Construct n.dat directory.
     char dataFile[MODULE_FNAME_SZ] = {0x0, };
-    snprintf(dataFile, sizeof(dataFile), "%d.dat", logIndex);
+    snprintf(dataFile, sizeof(dataFile), "%d.dat", dlgr_settings[mod_idx].logIndex);
 
     // Construct n+1.dat directory.
     char dataFileNew[MODULE_FNAME_SZ] = {0x0, };
-    snprintf(dataFileNew, sizeof(dataFileNew), "%d.dat", logIndex+1);
+    snprintf(dataFileNew, sizeof(dataFileNew), "%d.dat", dlgr_settings[mod_idx].logIndex+1);
 
     // Open the current data (.dat) file in binary-append mode.
     FILE *data = NULL;
@@ -435,6 +435,7 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
 
     // If we have to make a new .dat file...
     FILE *index = NULL;
+    const char* indexFile = "index.inf";
 
     // Make a new .dat file and iterate the index if necessary.
     if(fileSize >= dlgr_settings[mod_idx].maxFileSize){
@@ -564,7 +565,7 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
 
     // First, construct directories.
     char dataFile[MODULE_FNAME_SZ] = {0x0, };
-    snprintf(dataFile, sizeof(dataFile, "%d.dat", dlgr_settings[mod_idx].logIndex));
+    snprintf(dataFile, sizeof(dataFile), "%d.dat", dlgr_settings[mod_idx].logIndex);
 
     // Open the .dat file in binary-read mode.
     FILE *data = NULL;
@@ -586,7 +587,7 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
     }
 
     // Read the entire file into memory buffer. One byte at a time for sizeof(buffer) bytes.
-    if (fread(buffer, 0x1, fileSize, data) !=){
+    if (fread(buffer, 0x1, fileSize, data) != 1){
         return ERR_DATA_READ;
     }
 
@@ -636,6 +637,8 @@ int dlgr_EditSettings(char *moduleName, int value, int setting)
     }
 
     int moduleLogSize = dlgr_settings[mod_idx].moduleLogSize;
+
+    const char directory[] = "log";
 
     // Change our directory to inside the log folder.
     if (chdir(directory) < 0){
