@@ -343,18 +343,21 @@ int dlgr_init(char* moduleName, ssize_t maxLogSize)
         sync();
     }
 
-    eprintf("DEBUG: Reached end of initialization.");
+    eprintf("DEBUG: Passed settings.cfg checks.");
 
     chdir(".."); // Returns up from moduleName folder to log folder.
     chdir(".."); // Returns up from log folder to home directory.
 
     dlgr_idx++;
 
+    eprintf("DEBUG: Reached end of initialization.");
     return 1;
 }
 
 int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
 {
+    eprintf("DEBUG: dlgr_LogData called...");
+
     // We can find this module's settings via the following.
     int mod_idx = 0;
     for(; mod_idx < num_systems; mod_idx++){
@@ -402,6 +405,8 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
     // If we have to make a new .dat file...
     FILE *fIndexInf = NULL;
     const char* indexFileName = "index.inf";
+
+    eprintf("DEBUG: Passed directory checks.");
 
     // Make a new .dat file and iterate the index if necessary.
     if(fileSize >= dlgr_settings[mod_idx].maxFileSize){
@@ -452,10 +457,10 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
     fclose(fDataDat);
     sync();
 
-    eprintf("DEBUG: Finish data log.");
-
     chdir(".."); // Returns up from moduleName folder to log folder.
     chdir(".."); // Returns up from log folder to home directory.
+
+    eprintf("DEBUG: Finished data log.");
 
     return 1;
 }
@@ -465,7 +470,7 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
 
 int dlgr_RetrieveData(char *moduleName, char *output, int numRequestedLogs)
 {
-    eprintf("dlgr_RetrieveData called.");
+    eprintf("dlgr_RetrieveData called...");
 
     /*
      * This should return sets of data from the binary .dat files irregardless of what file its in,
@@ -507,6 +512,7 @@ int dlgr_RetrieveData(char *moduleName, char *output, int numRequestedLogs)
 
 int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int indexOffset)
 {
+    eprintf("DEBUG: dlgr_retrieve called...");
 
     // We can find this module's settings via the following.
     int mod_idx = 0;
@@ -577,11 +583,15 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
     chdir("..");
     chdir("..");
 
+    eprintf("DEBUG: dlgr_retrieve finished...");
+
     return numReadLogs;
 }
 
 ssize_t dlgr_QueryMemorySize(char *moduleName, int numRequestedLogs)
 {
+    eprintf("DEBUG: dlgr_QueryMemorySize called...");
+
     // We can find this module's settings via the following.
     int mod_idx = 0;
     for(; mod_idx < num_systems; mod_idx++){
@@ -592,11 +602,14 @@ ssize_t dlgr_QueryMemorySize(char *moduleName, int numRequestedLogs)
 
     int moduleLogSize = dlgr_settings[mod_idx].moduleLogSize;
 
+    eprintf("DEBUG: dlgr_QueryMemorySize finished.");
     return numRequestedLogs * (moduleLogSize + FBEGIN_SIZE + FEND_SIZE);
 }
 
 int dlgr_EditSettings(char *moduleName, int value, int setting)
 {
+    eprintf("DEBUG: dlgr_EditSettings called...");
+
     // We can find this module's settings via the following.
     int mod_idx = 0;
     for(; mod_idx < num_systems; mod_idx++){
@@ -653,10 +666,13 @@ int dlgr_EditSettings(char *moduleName, int value, int setting)
     chdir("..");
     chdir("..");
 
+    eprintf("DEBUG: dlgr_EditSettings finished.");
     return 1;
 }
 
 void dlgr_destroy()
 {
+    eprintf("DEBUG: dlgr_destroy called...");
     // TODO: Add frees
+    eprintf("DEBUG: dlgr_destroy finished.");
 }
