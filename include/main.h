@@ -24,6 +24,8 @@
     fflush(stderr)
 
 #include <signal.h>
+#include <unistd.h>
+#include <stdint.h>
 
 /**
  * @brief Describes ACS (system) states.
@@ -52,57 +54,8 @@ typedef enum
     ERROR_FSS_INIT = -6,
     ERROR_FSS_CONFIG = -7
 } SH_ERRORS;
-/**
- * @brief Thread-local system status variable (similar to errno).
- * 
- */
-extern __thread int sys_status;
-// thread local error printing
-void sherror(const char *);
-/**
- * @brief Control variable for thread loops.
- * 
- */
-extern volatile sig_atomic_t done;
-/**
- * @brief System variable containing the current boot count of the system.
- * This variable is provided to all modules by main.
- */
-extern int sys_boot_count;
-#ifdef MAIN_PRIVATE
-/**
- * @brief Name of the file where bootcount is stored on the file system.
- * 
- */
-#define BOOTCOUNT_FNAME "bootcount_fname.txt"
 
-/**
- * @brief Function that returns the current bootcount of the system.
- * Returns current boot count, and increases by 1 and stores it in nvmem.
- * Expected to be invoked only by _main()
- * 
- * @return int Current boot count (C-style)
- */
-int bootCount(void);
-
-// interrupt handler for SIGINT
-void catch_sigint(int);
-#endif // MAIN_PRIVATE
-#endif // MAIN_H
-
-/***************************
- * 
- * DATALOGGER
- * 
- * *************************/
-
-#ifndef DATALOGGER // aka datalogger_extern.h
-#define DATALOGGER
-
-#include <unistd.h>
-#include <stdint.h>
-
-enum ERROR
+typedef enum
 {
     ERR_INIT = -20,
     ERR_SETTINGS_OPEN,
@@ -125,13 +78,34 @@ enum ERROR
     ERR_INDEX_OPEN,
 
     ERR_MISC
-};
+} DLGR_ERRORS;
 
-enum SETTING
+typedef enum
 {
     MAX_FILE_SIZE = 0,
     MAX_DIR_SIZE
-};
+} DLGR_SETTINGS;
+
+/**
+ * @brief Thread-local system status variable (similar to errno).
+ * 
+ */
+extern __thread int sys_status;
+
+// thread local error printing
+void sherror(const char *);
+
+/**
+ * @brief Control variable for thread loops.
+ * 
+ */
+
+extern volatile sig_atomic_t done;
+/**
+ * @brief System variable containing the current boot count of the system.
+ * This variable is provided to all modules by main.
+ */
+extern int sys_boot_count;
 
 /**
  * @brief Logs passed data to a file.
@@ -193,7 +167,25 @@ ssize_t dlgr_QueryMemorySize(char *moduleName, int numRequestedLogs);
  */
 int dlgr_EditSettings(char *moduleName, int value, int setting);
 
-#ifdef DATALOGGER_PRIVATE // aka datalogger.h
+#ifdef MAIN_PRIVATE
+
+/**
+ * @brief Name of the file where bootcount is stored on the file system.
+ * 
+ */
+#define BOOTCOUNT_FNAME "bootcount_fname.txt"
+
+/**
+ * @brief Function that returns the current bootcount of the system.
+ * Returns current boot count, and increases by 1 and stores it in nvmem.
+ * Expected to be invoked only by _main()
+ * 
+ * @return int Current boot count (C-style)
+ */
+int bootCount(void);
+
+// interrupt handler for SIGINT
+void catch_sigint(int);
 
 // File and directories cannot exceed these limits.
 #define SIZE_FILE_HARDLIMIT 1048576 // 1MB
@@ -239,5 +231,5 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
  */
 void dlgr_destroy();
 
-#endif // DATALOGGER_PRIVATE
-#endif // DATALOGGER
+#endif // MAIN_PRIVATE
+#endif // MAIN_H
