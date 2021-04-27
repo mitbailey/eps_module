@@ -116,6 +116,7 @@ int main(void)
     }
 
     free(dlgr_settings);
+    free(dlgr_modname);
 
     return 0;
 }
@@ -193,13 +194,14 @@ int bootCount()
     return --_bootCount;              // return 0 on first boot, return 1 on second boot etc
 }
 
-// Datlogger functions below.
+// Datalogger functions below.
 
 int dlgr_init(char* moduleName, ssize_t maxLogSize)
 {
     eprintf("DEBUG: dlgr_init called...");
 
     if (maxLogSize < 1){
+        // A log must contain at least 1 byte.
         return ERR_INVALID_INPUT;
     }
 
@@ -237,80 +239,81 @@ int dlgr_init(char* moduleName, ssize_t maxLogSize)
 #define MODULE_FNAME_SZ 128
 
     // Set up module.inf file.
-    FILE *modu = NULL;
-    const char* moduleFile = "module.inf";
+    FILE *fModuleInf = NULL;
+    const char* moduleFileName = "module.inf";
 
     // To retrieve the maxLogSize as a c-string.
     char sMaxLogSize[20];
 
     // If a module.inf file already exists, use its maxLogSize value. 
     // Otherwise, create one and put in this module's max log size.
-    if (access(moduleFile, F_OK | R_OK) == 0){
-        modu = fopen(moduleFile, "r");
-        if (modu == NULL){
+    if (access(moduleFileName, F_OK | R_OK) == 0){
+        fModuleInf = fopen(moduleFileName, "r");
+        if (fModuleInf == NULL){
             return ERR_MODU_OPEN;
         }
-        fgets(sMaxLogSize, 20, (FILE *)modu);
+        fgets(sMaxLogSize, 20, (FILE *)fModuleInf);
         dlgr_settings[dlgr_idx].moduleLogSize = atoi(sMaxLogSize);
+        fclose(fModuleInf);
     } else {
-        modu = fopen(moduleFile, "w");
-        if (modu == NULL){
+        fModuleInf = fopen(moduleFileName, "w");
+        if (fModuleInf == NULL){
             return ERR_MODU_OPEN;
         }
-        fprintf(modu, "%d", maxLogSize);
+        fprintf(fModuleInf, "%d", maxLogSize);
         dlgr_settings[dlgr_idx].moduleLogSize = maxLogSize;
-        fclose(modu);
+        fclose(fModuleInf);
         sync();
     }
 
     eprintf("DEBUG: Passed module.inf check.");
 
     // Set up index.inf file.
-    FILE *index = NULL;
-    const char* indexFile = "index.inf";
+    FILE *fIndexInf = NULL;
+    const char* indexFileName = "index.inf";
 
     // To retrieve the index as a c-string.
     char sIndex[20];
 
     // If there is no index.inf, then there cannot be any .dat log files either.
     // If this is the case, we will also need to create an initial 0.dat file.
-    FILE *data = NULL;
-    const char* dataFile = "0.dat";
+    FILE *fDataDat = NULL;
+    const char* dataFileName = "0.dat";
 
     // If an index.inf exists, grab our last index.
     // Otherwise, put in 0.
-    if (access(indexFile, F_OK | R_OK) == 0){
-        index = fopen(indexFile, "r");
-        if (index == NULL){
+    if (access(indexFileName, F_OK | R_OK) == 0){
+        fIndexInf = fopen(indexFileName, "r");
+        if (fIndexInf == NULL){
             return ERR_INDEX_OPEN;
         }
-        fgets(sIndex, 20, (FILE *)index);
+        fgets(sIndex, 20, (FILE *)fIndexInf);
         dlgr_settings[dlgr_idx].logIndex = atoi(sIndex);
-        fclose(index);
+        fclose(fIndexInf);
     } else {
-        index = fopen(indexFile, "w");
-        if (index == NULL){
+        fIndexInf = fopen(indexFileName, "w");
+        if (fIndexInf == NULL){
             return ERR_INDEX_OPEN;
         }
-        fprintf(index, "0\n");
+        fprintf(fIndexInf, "0\n");
         dlgr_settings[dlgr_idx].logIndex = 0;
-        fclose(index);
+        fclose(fIndexInf);
         sync();
 
         // Now set up 0.dat. Note that it will be blank until a log is logged.
-        data = fopen(dataFile, "wb");
-        if (data == NULL){
+        fDataDat = fopen(dataFileName, "wb");
+        if (fDataDat == NULL){
             return ERR_DATA_OPEN;
         }
-        fclose(data);
+        fclose(fDataDat);
         sync();
     }
 
     eprintf("DEBUG: Passed index.inf and 0.dat check.");
 
     // Set up settings.cfg file.
-    FILE *settings = NULL;
-    const char* settingsFile = "settings.cfg";
+    FILE *fSettingsCfg = NULL;
+    const char* settingsFileName = "settings.cfg";
 
     // For the extraction of relevant settings.
     char sMaxFileSize[20];
@@ -318,25 +321,25 @@ int dlgr_init(char* moduleName, ssize_t maxLogSize)
 
     // If settings.cfg exists, update our dlgr_settings.
     // Otherwise, create a settings.cfg with default settings.
-    if (access(settingsFile, F_OK | R_OK) == 0){
-        settings = fopen(settingsFile, "r");
-        if (settings == NULL){
+    if (access(settingsFileName, F_OK | R_OK) == 0){
+        fSettingsCfg = fopen(settingsFileName, "r");
+        if (fSettingsCfg == NULL){
             return ERR_SETTINGS_OPEN;
         }
-        if(fgets(sMaxFileSize, 20, (FILE *)settings) == NULL || fgets(sMaxDirSize, 10, (FILE *)settings) == NULL){
+        if(fgets(sMaxFileSize, 20, (FILE *)fSettingsCfg) == NULL || fgets(sMaxDirSize, 10, (FILE *)fSettingsCfg) == NULL){
             return ERR_SETTINGS_ACCESS;
         }
         dlgr_settings[dlgr_idx].maxFileSize = atoi(sMaxFileSize);
         dlgr_settings[dlgr_idx].maxDirSize = atoi(sMaxDirSize);
-        fclose(settings);
+        fclose(fSettingsCfg);
     } else {
-        settings = fopen(settingsFile, "w");
-        if (settings == NULL){
+        fSettingsCfg = fopen(settingsFileName, "w");
+        if (fSettingsCfg == NULL){
             return ERR_SETTINGS_OPEN;
         }
-        fprintf(settings, "8192\n");
-        fprintf(settings, "4194304\n");
-        fclose(settings);
+        fprintf(fSettingsCfg, "8192\n");
+        fprintf(fSettingsCfg, "4194304\n");
+        fclose(fSettingsCfg);
         sync();
     }
 
@@ -379,31 +382,31 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
     }
 
     // Construct n.dat directory.
-    char dataFile[MODULE_FNAME_SZ] = {0x0, };
-    snprintf(dataFile, sizeof(dataFile), "%d.dat", dlgr_settings[mod_idx].logIndex);
+    char dataFileName[MODULE_FNAME_SZ] = {0x0, };
+    snprintf(dataFileName, sizeof(dataFileName), "%d.dat", dlgr_settings[mod_idx].logIndex);
 
     // Construct n+1.dat directory.
-    char dataFileNew[MODULE_FNAME_SZ] = {0x0, };
-    snprintf(dataFileNew, sizeof(dataFileNew), "%d.dat", dlgr_settings[mod_idx].logIndex+1);
+    char dataFileNewName[MODULE_FNAME_SZ] = {0x0, };
+    snprintf(dataFileNewName, sizeof(dataFileNewName), "%d.dat", dlgr_settings[mod_idx].logIndex+1);
 
     // Open the current data (.dat) file in binary-append mode.
-    FILE *data = NULL;
-    data = fopen(dataFile, "ab");
-    if(data == NULL){
+    FILE *fDataDat = NULL;
+    fDataDat = fopen(dataFileName, "ab");
+    if(fDataDat == NULL){
         return ERR_DATA_OPEN;
     }
 
     // Fetch the current file size.
-    long int fileSize = ftell(data);
+    long int fileSize = ftell(fDataDat);
 
     // If we have to make a new .dat file...
-    FILE *index = NULL;
-    const char* indexFile = "index.inf";
+    FILE *fIndexInf = NULL;
+    const char* indexFileName = "index.inf";
 
     // Make a new .dat file and iterate the index if necessary.
     if(fileSize >= dlgr_settings[mod_idx].maxFileSize){
-        index = fopen(indexFile, "w");
-        if (index==NULL){
+        fIndexInf = fopen(indexFileName, "w");
+        if (fIndexInf==NULL){
             return ERR_SETTINGS_OPEN;
         }
 
@@ -411,21 +414,24 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
         dlgr_settings[mod_idx].logIndex++;
 
         // Rewrite the index file.
-        fprintf(index, "%d\n", dlgr_settings[mod_idx].logIndex);
-        fclose(data);
-        fclose(index);
+        fprintf(fIndexInf, "%d\n", dlgr_settings[mod_idx].logIndex);
+        fclose(fDataDat);
+        fclose(fIndexInf);
         sync();
 
         // Switch the data pointer to the new data file.
-        data = fopen(dataFileNew, "wb");
+        fDataDat = fopen(dataFileNewName, "wb");
+        if (fDataDat == NULL){
+            return ERR_DATA_OPEN;
+        }
 
         // Delete an old file.
-        char dataFileOld[MODULE_FNAME_SZ] = {0x0, };
+        char dataFileOldName[MODULE_FNAME_SZ] = {0x0, };
 
         eprintf("DEBUG: Deleting old file. This is prone to SEGMENTATION FAULTS.");
         
-        snprintf(dataFileOld, sizeof(dataFileOld), "%d.dat", dlgr_settings[mod_idx].logIndex - (dlgr_settings[mod_idx].maxDirSize / dlgr_settings[mod_idx].maxFileSize));
-        if (remove(dataFileOld) != 0){
+        snprintf(dataFileOldName, sizeof(dataFileOldName), "%d.dat", dlgr_settings[mod_idx].logIndex - (dlgr_settings[mod_idx].maxDirSize / dlgr_settings[mod_idx].maxFileSize));
+        if (remove(dataFileOldName) != 0){
             return ERR_DATA_REMOVE;
         }
         
@@ -433,17 +439,17 @@ int dlgr_LogData(char* moduleName, ssize_t size, void *dataIn)
     }
 
     // Write FBEGIN, the data, and then FEND to the binary .dat file.
-    fwrite(FBEGIN, 6, 1, data);
-    fwrite(dataIn, sizeof(dataIn), 1, data);
+    fwrite(FBEGIN, 6, 1, fDataDat);
+    fwrite(dataIn, sizeof(dataIn), 1, fDataDat);
 
     // Data padding is size < moduleLogSize.
     for (; size < moduleLogSize; size += sizeof(0)){
         fwrite(dataIn, 1, 1, 0);
     }
 
-    fwrite(FEND, 4, 1, data);
+    fwrite(FEND, 4, 1, fDataDat);
 
-    fclose(data);
+    fclose(fDataDat);
     sync();
 
     eprintf("DEBUG: Finish data log.");
@@ -527,20 +533,20 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
     int numReadLogs = 0;
 
     // First, construct directories.
-    char dataFile[MODULE_FNAME_SZ] = {0x0, };
-    snprintf(dataFile, sizeof(dataFile), "%d.dat", dlgr_settings[mod_idx].logIndex);
+    char dataFileName[MODULE_FNAME_SZ] = {0x0, };
+    snprintf(dataFileName, sizeof(dataFileName), "%d.dat", dlgr_settings[mod_idx].logIndex);
 
     // Open the .dat file in binary-read mode.
-    FILE *data = NULL;
-    data = fopen(dataFile, "rb");
-    if (data == NULL){
+    FILE *fDataDat = NULL;
+    fDataDat = fopen(dataFileName, "rb");
+    if (fDataDat == NULL){
         return ERR_DATA_OPEN;
     }
 
     // Find the total size of the .dat file.
-    fseek(data, 0, SEEK_END);
-    ssize_t fileSize = ftell(data);
-    fseek(data, 0, SEEK_SET);
+    fseek(fDataDat, 0, SEEK_END);
+    ssize_t fileSize = ftell(fDataDat);
+    fseek(fDataDat, 0, SEEK_SET);
 
     // Create a memory buffer of size fileSize
     char *buffer = NULL;
@@ -550,7 +556,7 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
     }
 
     // Read the entire file into memory buffer. One byte at a time for sizeof(buffer) bytes.
-    if (fread(buffer, 0x1, fileSize, data) != 1){
+    if (fread(buffer, 0x1, fileSize, fDataDat) != 1){
         return ERR_DATA_READ;
     }
 
@@ -565,7 +571,7 @@ int dlgr_retrieve(char *moduleName, char *output, int numRequestedLogs, int inde
         numReadLogs++;
     }
 
-    fclose(data);
+    fclose(fDataDat);
     free(buffer);
 
     chdir("..");
@@ -632,16 +638,16 @@ int dlgr_EditSettings(char *moduleName, int value, int setting)
             return ERR_DEFAULT_CASE;
     }
 
-    FILE *settings = NULL;
-    settings = fopen("settings.cfg", "w");
-    if (settings == NULL) {
+    FILE *fSettingsCfg = NULL;
+    fSettingsCfg = fopen("settings.cfg", "w");
+    if (fSettingsCfg == NULL) {
         return ERR_SETTINGS_OPEN;
     }
 
-    fprintf(settings, "%d\n", dlgr_settings[mod_idx].maxFileSize);
-    fprintf(settings, "%d\n", dlgr_settings[mod_idx].maxDirSize);
+    fprintf(fSettingsCfg, "%d\n", dlgr_settings[mod_idx].maxFileSize);
+    fprintf(fSettingsCfg, "%d\n", dlgr_settings[mod_idx].maxDirSize);
 
-    fclose(settings);
+    fclose(fSettingsCfg);
     sync();
 
     chdir("..");
