@@ -18,6 +18,7 @@
 #endif
 #endif
 
+// Warning says already defined in p31u, but complains when it is removed.
 #define eprintf(str, ...) \
     fprintf(stderr, "%s, %d: " str "\n", __func__, __LINE__, ##__VA_ARGS__); \
     fflush(stderr)
@@ -99,6 +100,7 @@ void catch_sigint(int);
 #define DATALOGGER
 
 #include <unistd.h>
+#include <stdint.h>
 
 enum ERROR
 {

@@ -50,7 +50,7 @@ int main(void)
     // Allocate dlgr_settings enough memory to store settings of all systems, even though
     // this is unlikely to ever be needed.
     dlgr_settings = (datalogger_t *)malloc(sizeof(datalogger_t) * num_systems);
-    dlgr_modname = (char *)malloc(sizeof(char*) * num_systems * 20);
+    dlgr_modname = (char **)malloc(sizeof(char*) * num_systems * 20);
     
     // initialize modules
     for (int i = 0; i < num_init; i++)
@@ -360,7 +360,7 @@ int dlgr_init(char* moduleName, ssize_t maxLogSize)
         if (settings == NULL){
             return ERR_SETTINGS_OPEN;
         }
-        if(fgets(sMaxFileSize, 20, (FILE *)settings) == NULL || fgets(sMaxDirSize, 10, (FILE *)settings == NULL)){
+        if(fgets(sMaxFileSize, 20, (FILE *)settings) == NULL || fgets(sMaxDirSize, 10, (FILE *)settings) == NULL){
             return ERR_SETTINGS_ACCESS;
         }
         dlgr_settings[dlgr_idx].maxFileSize = atoi(sMaxFileSize);
@@ -636,7 +636,7 @@ int dlgr_EditSettings(char *moduleName, int value, int setting)
         }
     }
 
-    int moduleLogSize = dlgr_settings[mod_idx].moduleLogSize;
+    //int moduleLogSize = dlgr_settings[mod_idx].moduleLogSize;
 
     const char directory[] = "log";
 
