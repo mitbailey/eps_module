@@ -168,7 +168,7 @@ void *eps_test(void *tid)
         case 'h':
         case 'H':
             memset(&hk, 0x0, sizeof(hkparam_t));
-            eps_get_hk(&hk);
+            eps_get_hkparam(&hk);
             memset(&hk_out, 0x0, sizeof(eps_hk_out_t));
             eps_get_hk_out(&hk_out);
             print_hk(hk);

@@ -42,7 +42,15 @@ int eps_reboot();
   * @param hk Pointer to hkparam_t object.
   * @return int Value for i2c read / write.
   */
-int eps_get_hk(hkparam_t *hk);
+int eps_get_hkparam(hkparam_t *hk);
+
+/**
+ * @brief 
+ * 
+ * @param hk 
+ * @return int 
+ */
+int eps_get_hk(eps_hk_t *hk);
 
 /**
   * @brief Gets basic housekeeping data.
@@ -70,6 +78,29 @@ int eps_tgl_lup(eps_lup_idx lup);
 int eps_lup_set(eps_lup_idx lup, int pw);
 
 /**
+ * @brief 
+ * 
+ * @param tout_ms 
+ * @return int 
+ */
+int eps_battheater_set(uint64_t tout_ms);
+
+/**
+ * @brief 
+ * 
+ * @param tout_ms 
+ * @return int 
+ */
+int eps_ks_set(uint64_t tout_ms);
+
+/**
+  * @brief Power cycles all power lines including battery rails.
+  *
+  * @return int Value for i2c read / write.
+  */
+int eps_hardreset();
+
+/**
  * @brief Gets the EPS configuration.
  * 
  * @param conf Pointer to eps_config_t object for output.
@@ -86,10 +117,79 @@ int eps_get_conf(eps_config_t *conf);
 int eps_set_conf(eps_config_t *conf);
 
 /**
-  * @brief Power cycles all power lines including battery rails.
-  *
-  * @return int Value for i2c read / write.
-  */
-int eps_hardreset();
+ * @brief 
+ * 
+ * @param conf 
+ * @return int 
+ */
+int eps_get_conf2(eps_config2_t *conf);
+
+/**
+ * @brief 
+ * 
+ * @param conf 
+ * @return int 
+ */
+int eps_set_conf2(eps_config2_t *conf);
+
+/**
+ * @brief 
+ * 
+ * @return int 
+ */
+int eps_reset_counters();
+
+/**
+ * @brief 
+ * 
+ * @param reply 
+ * @param cmd 
+ * @param heater 
+ * @param mode 
+ * @return int 
+ */
+int eps_set_heater(unsigned char *reply, uint8_t cmd, uint8_t heater, uint8_t mode);
+
+/**
+ * @brief 
+ * 
+ * @param mode 
+ * @return int 
+ */
+int eps_set_pv_auto(uint8_t mode);
+
+/**
+ * @brief 
+ * 
+ * @param V1 
+ * @param V2 
+ * @param V3 
+ * @return int 
+ */
+int eps_set_pv_volt(uint16_t V1, uint16_t V2, uint16_t V3);
+
+/**
+ * @brief 
+ * 
+ * @param hk 
+ * @return int 
+ */
+int eps_get_hk_2_vi(eps_hk_vi_t *hk);
+
+/**
+ * @brief 
+ * 
+ * @param hk 
+ * @return int 
+ */
+int eps_get_hk_wdt(eps_hk_wdt_t *hk);
+
+/**
+ * @brief 
+ * 
+ * @param hk 
+ * @return int 
+ */
+int eps_get_hk_2_basic(eps_hk_basic_t *hk);
 
 #endif // EPS_EXTERN_H
